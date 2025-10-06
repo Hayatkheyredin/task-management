@@ -1,4 +1,3 @@
-import React from 'react'
 import { createRoutesFromElements, Route } from 'react-router-dom'
 import { RootLayout } from './ui/RootLayout'
 import { LoginPage } from './views/LoginPage'

@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../utils/hooks'
-import { Task, fetchTasks, createTaskThunk, updateTaskThunk, deleteTaskThunk, reorderTasksThunk } from '../store/slices/tasksSlice'
+import { Task, fetchTasks, createTaskThunk, updateTaskThunk, deleteTaskThunk } from '../store/slices/tasksSlice'
 import styled from 'styled-components'
-import { useSocket } from '../utils/socket'
 
 const Row = styled.div`
   display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
@@ -12,17 +11,10 @@ export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch()
   const { items } = useAppSelector(s => s.tasks)
   const [filter, setFilter] = useState<{status?: string; priority?: string}>({})
-  const socket = useSocket()
 
   useEffect(() => {
     dispatch(fetchTasks(filter as any))
   }, [dispatch, filter])
-
-  useEffect(() => {
-    function onTaskUpdated() { dispatch(fetchTasks(filter as any)) }
-    socket.on('task:updated', onTaskUpdated)
-    return () => { socket.off('task:updated', onTaskUpdated) }
-  }, [socket, dispatch, filter])
 
   const grouped = useMemo(() => {
     const byStatus: Record<string, Task[]> = { todo: [], in_progress: [], done: [] }
@@ -42,6 +34,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div>
+      <h1>Task Management Dashboard</h1>
       <Row>
         <select value={filter.status || ''} onChange={e => setFilter(f => ({...f, status: e.target.value || undefined}))}>
           <option value="">All Statuses</option>
