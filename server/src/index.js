@@ -2,13 +2,11 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import { connectToDatabase } from "./lib/db.js";
 import { registerSocketServer } from "./lib/socket.js";
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);

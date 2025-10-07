@@ -9,6 +9,7 @@ export const LoginPage: React.FC = () => {
   const nav = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -17,11 +18,14 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <form onSubmit={submit} style={{ display: 'grid', gap: 8, maxWidth: 320 }}>
+    <form onSubmit={submit} style={{ display: 'grid', gap: 8, maxWidth: 360, margin: '0 auto', minHeight: '70vh', alignContent: 'center' }}>
       <h2>Login</h2>
-      <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-      <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button disabled={auth.status==='loading'}>Login</button>
+      <input placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input style={{ flex: 1 }} placeholder="Password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required />
+        <button type="button" onClick={() => setShowPassword(v => !v)}>{showPassword ? 'Hide' : 'Show'}</button>
+      </div>
+      <button disabled={auth.status==='loading'}>{auth.status==='loading' ? 'Logging in…' : 'Login'}</button>
       {auth.error && <div style={{ color: 'red' }}>{auth.error}</div>}
     </form>
   )

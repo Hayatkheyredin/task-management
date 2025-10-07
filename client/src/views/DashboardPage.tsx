@@ -12,6 +12,9 @@ export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch()
   const { items } = useAppSelector(s => s.tasks)
   const [filter, setFilter] = useState<{status?: string; priority?: string}>({})
+  const [newTask, setNewTask] = useState<{title: string; priority: 'low'|'medium'|'high'; description?: string}>({ title: '', priority: 'medium' })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
 
   useEffect(() => {
     dispatch(fetchTasks(filter as any))
@@ -23,9 +26,11 @@ export const DashboardPage: React.FC = () => {
     return byStatus
   }, [items])
 
-  function addTask() {
-    const title = prompt('Task title?')
-    if (title) dispatch(createTaskThunk({ title }))
+  async function addTask(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newTask.title.trim()) return
+    await dispatch(createTaskThunk({ title: newTask.title.trim(), priority: newTask.priority, description: newTask.description }))
+    setNewTask({ title: '', priority: 'medium' })
   }
 
   function toggleStatus(t: Task) {
@@ -49,8 +54,20 @@ export const DashboardPage: React.FC = () => {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-        <button onClick={addTask}>Add Task</button>
       </Row>
+
+      <form onSubmit={addTask} style={{ display: 'grid', gap: 8, maxWidth: 520, marginBottom: 12 }}>
+        <input placeholder="Task title" value={newTask.title} onChange={e => setNewTask(t => ({...t, title: e.target.value}))} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select value={newTask.priority} onChange={e => setNewTask(t => ({...t, priority: e.target.value as any}))}>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <input style={{ flex: 1 }} placeholder="Description (optional)" value={newTask.description || ''} onChange={e => setNewTask(t => ({...t, description: e.target.value}))} />
+          <button type="submit">Add Task</button>
+        </div>
+      </form>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
         {(['todo','in_progress','done'] as const).map(col => (
@@ -58,8 +75,12 @@ export const DashboardPage: React.FC = () => {
             <h3>{col.replace('_',' ')}</h3>
             {grouped[col].map(t => (
               <div key={t._id} style={{ border: '1px solid #ccc', borderRadius: 6, padding: 8, marginBottom: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <strong>{t.title}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  {editingId === t._id ? (
+                    <input autoFocus value={editingTitle} onChange={e => setEditingTitle(e.target.value)} onBlur={() => { setEditingId(null); setEditingTitle('') }} onKeyDown={e => { if (e.key === 'Enter') { dispatch(updateTaskThunk({ id: t._id, updates: { title: editingTitle.trim() || t.title } })); setEditingId(null); setEditingTitle('') } }} />
+                  ) : (
+                    <strong onDoubleClick={() => { setEditingId(t._id); setEditingTitle(t.title) }} title="Double-click to edit title">{t.title}</strong>
+                  )}
                   <span>{t.priority}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -68,6 +89,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
             ))}
+            {grouped[col].length === 0 && <div style={{ color: '#666' }}>No tasks</div>}
           </div>
         ))}
       </div>
