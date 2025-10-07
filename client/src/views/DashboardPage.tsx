@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../utils/hooks'
-import { Task, fetchTasks, createTaskThunk, updateTaskThunk, deleteTaskThunk } from '../store/slices/tasksSlice'
+import type { Task } from '../store/slices/tasksSlice'
+import { fetchTasks, createTaskThunk, updateTaskThunk, deleteTaskThunk } from '../store/slices/tasksSlice'
 import styled from 'styled-components'
 
 const Row = styled.div`

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { useAppDispatch } from '../utils/hooks'
+import { useAppDispatch, useAppSelector } from '../utils/hooks'
 import { logout } from '../store/slices/authSlice'
 
 const Shell = styled.div`
@@ -20,15 +20,16 @@ const Nav = styled.nav`
 export const RootLayout: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const token = useAppSelector(s => s.auth.token)
   return (
     <Shell>
       <Nav>
         <Link to="/">Dashboard</Link>
         <Link to="/profile">Profile</Link>
         <span style={{ flex: 1 }} />
-        <Link to="/login">Login</Link>
-        <Link to="/signup">Signup</Link>
-        <button onClick={() => { dispatch(logout()); navigate('/login') }}>Logout</button>
+        {!token && <Link to="/login">Login</Link>}
+        {!token && <Link to="/signup">Signup</Link>}
+        {token && <button onClick={() => { dispatch(logout()); navigate('/login') }}>Logout</button>}
       </Nav>
       <Outlet />
     </Shell>
