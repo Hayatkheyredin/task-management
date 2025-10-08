@@ -12,7 +12,7 @@ export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch()
   const { items } = useAppSelector(s => s.tasks)
   const [filter, setFilter] = useState<{status?: string; priority?: string}>({})
-  const [newTask, setNewTask] = useState<{title: string; priority: 'low'|'medium'|'high'; description?: string}>({ title: '', priority: 'medium' })
+  const [newTask, setNewTask] = useState<{title: string; priority: 'low'|'medium'|'high'; description?: string; dueDate?: string; category?: string}>({ title: '', priority: 'medium' })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
 
@@ -29,7 +29,13 @@ export const DashboardPage: React.FC = () => {
   async function addTask(e: React.FormEvent) {
     e.preventDefault()
     if (!newTask.title.trim()) return
-    await dispatch(createTaskThunk({ title: newTask.title.trim(), priority: newTask.priority, description: newTask.description }))
+    await dispatch(createTaskThunk({ 
+      title: newTask.title.trim(), 
+      priority: newTask.priority, 
+      description: newTask.description,
+      dueDate: newTask.dueDate,
+      category: newTask.category
+    }))
     setNewTask({ title: '', priority: 'medium' })
   }
 
@@ -56,17 +62,19 @@ export const DashboardPage: React.FC = () => {
         </select>
       </Row>
 
-      <form onSubmit={addTask} style={{ display: 'grid', gap: 8, maxWidth: 520, marginBottom: 12 }}>
-        <input placeholder="Task title" value={newTask.title} onChange={e => setNewTask(t => ({...t, title: e.target.value}))} />
-        <div style={{ display: 'flex', gap: 8 }}>
+      <form onSubmit={addTask} style={{ display: 'grid', gap: 8, maxWidth: 600, marginBottom: 12 }}>
+        <input placeholder="Task title" value={newTask.title} onChange={e => setNewTask(t => ({...t, title: e.target.value}))} required />
+        <textarea placeholder="Description (optional)" value={newTask.description || ''} onChange={e => setNewTask(t => ({...t, description: e.target.value}))} rows={2} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           <select value={newTask.priority} onChange={e => setNewTask(t => ({...t, priority: e.target.value as any}))}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+            <option value="low">Low Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="high">High Priority</option>
           </select>
-          <input style={{ flex: 1 }} placeholder="Description (optional)" value={newTask.description || ''} onChange={e => setNewTask(t => ({...t, description: e.target.value}))} />
-          <button type="submit">Add Task</button>
+          <input type="date" placeholder="Due date" onChange={e => setNewTask(t => ({...t, dueDate: e.target.value}))} />
+          <input placeholder="Category" value={newTask.category || ''} onChange={e => setNewTask(t => ({...t, category: e.target.value}))} />
         </div>
+        <button type="submit" style={{ background: '#16a34a', borderColor: '#16a34a' }}>Add Task</button>
       </form>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
@@ -81,11 +89,14 @@ export const DashboardPage: React.FC = () => {
                   ) : (
                     <strong onDoubleClick={() => { setEditingId(t._id); setEditingTitle(t.title) }} title="Double-click to edit title">{t.title}</strong>
                   )}
-                  <span>{t.priority}</span>
+                  <span style={{ background: t.priority === 'high' ? '#ef4444' : t.priority === 'medium' ? '#f59e0b' : '#10b981', color: 'white', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{t.priority}</span>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => toggleStatus(t)}>Next Status</button>
-                  <button onClick={() => dispatch(deleteTaskThunk(t._id))}>Delete</button>
+                {t.description && <p style={{ margin: '4px 0', fontSize: 14, color: '#6b7280' }}>{t.description}</p>}
+                {t.dueDate && <p style={{ margin: '4px 0', fontSize: 12, color: '#9ca3af' }}>Due: {new Date(t.dueDate).toLocaleDateString()}</p>}
+                {t.category && <p style={{ margin: '4px 0', fontSize: 12, color: '#9ca3af' }}>Category: {t.category}</p>}
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <button onClick={() => toggleStatus(t)} style={{ fontSize: 12 }}>Next Status</button>
+                  <button onClick={() => dispatch(deleteTaskThunk(t._id))} style={{ fontSize: 12, background: '#ef4444', borderColor: '#ef4444' }}>Delete</button>
                 </div>
               </div>
             ))}

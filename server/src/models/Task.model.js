@@ -1,30 +1,71 @@
-import mongoose from "mongoose";
+import { DataTypes } from "sequelize";
+import sequelize from "../lib/db.js";
+import { User } from "./User.model.js";
 
-const SubtaskSchema = new mongoose.Schema(
-	{
-		id: { type: String, required: true },
-		title: { type: String, required: true },
-		completed: { type: Boolean, default: false },
-		position: { type: Number, default: 0 },
-	},
-	{ _id: false }
-);
+const Task = sequelize.define("Task", {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: User,
+      key: 'id',
+    },
+  },
+  assignedTo: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: User,
+      key: 'id',
+    },
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  dueDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  priority: {
+    type: DataTypes.ENUM('low', 'medium', 'high'),
+    defaultValue: 'medium',
+  },
+  status: {
+    type: DataTypes.ENUM('todo', 'in_progress', 'done'),
+    defaultValue: 'todo',
+  },
+  category: {
+    type: DataTypes.STRING,
+    defaultValue: 'General',
+  },
+  subtasks: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+  },
+  position: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+}, {
+  timestamps: true,
+});
 
-const TaskSchema = new mongoose.Schema(
-	{
-		userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true, required: true },
-		title: { type: String, required: true },
-		description: { type: String },
-		dueDate: { type: Date },
-		priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },
-		status: { type: String, enum: ["todo", "in_progress", "done"], default: "todo" },
-		category: { type: String, default: "General" },
-		subtasks: { type: [SubtaskSchema], default: [] },
-		position: { type: Number, default: 0 },
-	},
-	{ timestamps: true }
-);
+// Define associations
+Task.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
+Task.belongsTo(User, { foreignKey: 'assignedTo', as: 'assignee' });
+User.hasMany(Task, { foreignKey: 'userId', as: 'ownedTasks' });
+User.hasMany(Task, { foreignKey: 'assignedTo', as: 'assignedTasks' });
 
-export const Task = mongoose.model("Task", TaskSchema);
+export { Task };
 
 
