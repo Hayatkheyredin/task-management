@@ -3,12 +3,11 @@ import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import { connectToDatabase, disconnectFromDatabase } from "./lib/db.js";
+import sequelize from "./lib/db.js";
 import { registerSocketServer } from "./lib/socket.js";
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -34,7 +33,7 @@ const PORT = process.env.PORT || 5000;
 
 async function start() {
 	try {
-		await connectToDatabase();
+		await sequelize.sync(); // Create tables if they don't exist
 		registerSocketServer(server);
 		
 		server.listen(PORT, () => {
@@ -47,35 +46,4 @@ async function start() {
 	}
 }
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-	console.log('\n🛑 Received SIGINT. Graceful shutdown...');
-	try {
-		await disconnectFromDatabase();
-		server.close(() => {
-			console.log('✅ Server closed');
-			process.exit(0);
-		});
-	} catch (error) {
-		console.error('❌ Error during shutdown:', error);
-		process.exit(1);
-	}
-});
-
-process.on('SIGTERM', async () => {
-	console.log('\n🛑 Received SIGTERM. Graceful shutdown...');
-	try {
-		await disconnectFromDatabase();
-		server.close(() => {
-			console.log('✅ Server closed');
-			process.exit(0);
-		});
-	} catch (error) {
-		console.error('❌ Error during shutdown:', error);
-		process.exit(1);
-	}
-});
-
 start();
-
-
