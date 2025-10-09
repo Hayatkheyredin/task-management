@@ -3,22 +3,153 @@ import { Link } from 'react-router-dom'
 
 export const HomePage: React.FC = () => {
   return (
-    <main>
+    <main style={{ width: '100%', maxWidth: 'none' }}>
       {/* HERO - full viewport height */}
-      <section id="home" className="container card" style={{ textAlign: 'center', padding: 56, minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: 48 }}>Stay Organized. Get Things Done.</h1>
-        <p style={{ color: 'var(--muted)', marginTop: 12, fontSize: 18 }}>
-          A simple and intuitive way to manage your daily tasks, projects, and deadlines—all in one place.
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 20 }}>
-          <Link to="/signup"><button style={{ background: '#16a34a', borderColor: '#16a34a' }}>Get Started</button></Link>
+      <section id="home" style={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background decoration */}
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          right: '-50%',
+          width: '200%',
+          height: '200%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+          animation: 'float 6s ease-in-out infinite'
+        }} />
+        
+        <div style={{ 
+          width: '100%',
+          padding: '0 20px',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <h1 style={{ 
+            margin: 0, 
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+            fontWeight: '700',
+            lineHeight: '1.2',
+            marginBottom: '24px',
+            textShadow: '0 4px 8px rgba(0,0,0,0.3)'
+          }}>
+            Stay Organized. Get Things Done.
+          </h1>
+          <p style={{ 
+            color: 'rgba(255, 255, 255, 0.9)', 
+            marginTop: 0, 
+            fontSize: '1.25rem',
+            lineHeight: '1.6',
+            marginBottom: '40px',
+            maxWidth: '600px',
+            margin: '0 auto 40px auto'
+          }}>
+            A simple and intuitive way to manage your daily tasks, projects, and deadlines—all in one place.
+          </p>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '16px', 
+            flexWrap: 'wrap',
+            marginTop: '20px'
+          }}>
+            <Link to="/signup">
+              <button style={{ 
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                padding: '16px 32px',
+                borderRadius: '12px',
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)';
+              }}
+              >
+                Get Started Free
+              </button>
+            </Link>
+            <Link to="/login">
+              <button style={{ 
+                background: 'transparent',
+                border: '2px solid rgba(255, 255, 255, 0.5)',
+                color: 'white',
+                padding: '16px 32px',
+                borderRadius: '12px',
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+              >
+                Sign In
+              </button>
+            </Link>
+          </div>
         </div>
+        
+        {/* Floating elements */}
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          left: '10%',
+          width: '60px',
+          height: '60px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '50%',
+          animation: 'float 4s ease-in-out infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '60%',
+          right: '15%',
+          width: '40px',
+          height: '40px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '50%',
+          animation: 'float 5s ease-in-out infinite reverse'
+        }} />
       </section>
 
       {/* FEATURES */}
       <section id="features" className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card" style={{ display: 'grid', gap: 16 }}>
-          <h2 style={{ margin: 0 }}>Features</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0 }}>Features</h2>
+            <Link to="/features" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: '500' }}>
+              View All Features →
+            </Link>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {[{
               title: 'Smart Task Lists',
@@ -50,7 +181,12 @@ export const HomePage: React.FC = () => {
       {/* HOW IT WORKS */}
       <section id="about" className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="card" style={{ display: 'grid', gap: 16 }}>
-          <h2 style={{ margin: 0 }}>How It Works</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0 }}>How It Works</h2>
+            <Link to="/how-it-works" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: '500' }}>
+              Learn More →
+            </Link>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
             {[{ icon: '✏️', title: 'Create an account', desc: 'Sign up and personalize your workspace.' },
               { icon: '🗂️', title: 'Add your tasks', desc: 'Organize by projects or priorities.' },
@@ -67,16 +203,25 @@ export const HomePage: React.FC = () => {
 
       {/* CONTACT */}
       <section id="contact" className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <form className="card" style={{ display: 'grid', gap: 12, maxWidth: 640, margin: '0 auto' }} onSubmit={(e) => e.preventDefault()}>
-          <h2 style={{ margin: 0, textAlign: 'center' }}>Get in touch</h2>
-          <p style={{ color: 'var(--muted)', textAlign: 'center', marginTop: 0 }}>Have feedback or questions? Send us a message.</p>
-          <div className="row" style={{ gap: 12 }}>
-            <input style={{ flex: 1 }} placeholder="Your name" required />
-            <input style={{ flex: 1 }} placeholder="Your email" type="email" required />
-          </div>
-          <textarea placeholder="Message" rows={6} style={{ background: '#0b1220', border: '1px solid #1f2937', color: 'var(--text)', borderRadius: 8, padding: 12 }} required />
-          <button style={{ background: '#2563eb', borderColor: '#2563eb' }}>Send Message</button>
-        </form>
+        <div className="card" style={{ display: 'grid', gap: 16, maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ margin: 0 }}>Get in touch</h2>
+          <p style={{ color: 'var(--muted)', marginTop: 0 }}>Have feedback or questions? We'd love to hear from you.</p>
+          <Link 
+            to="/contact" 
+            style={{ 
+              background: '#2563eb', 
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              display: 'inline-block',
+              margin: '0 auto'
+            }}
+          >
+            Contact Us
+          </Link>
+        </div>
       </section>
     </main>
   )

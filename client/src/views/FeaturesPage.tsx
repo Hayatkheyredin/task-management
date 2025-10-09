@@ -1,26 +1,119 @@
-import React from 'react'
+import { Link } from 'react-router-dom';
+import { CheckCircle, Calendar, BarChart3, Bell, Users, Shield, Zap, Target } from 'lucide-react';
 
 export const FeaturesPage: React.FC = () => {
-  const cards = [
-    { title: 'Smart Task Lists', desc: 'Group by status, priority, due date.', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Real-Time Notifications', desc: 'Stay in sync across devices.', img: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Calendar View', desc: 'Plan your week visually.', img: 'https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Progress Analytics', desc: 'See trends and streaks at a glance.', img: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=800&auto=format&fit=crop' },
-  ]
+  const features = [
+    {
+      icon: <Target className="w-8 h-8" />,
+      title: "Smart Task Management",
+      description: "Create, organize, and prioritize tasks with intelligent categorization and due date tracking.",
+      benefits: ["Priority-based organization", "Due date reminders", "Task categorization", "Quick task creation"]
+    },
+    {
+      icon: <Calendar className="w-8 h-8" />,
+      title: "Calendar Integration",
+      description: "Visualize your tasks in a beautiful calendar view to plan your week and stay on schedule.",
+      benefits: ["Monthly and weekly views", "Drag-and-drop scheduling", "Deadline visualization", "Time blocking"]
+    },
+    {
+      icon: <BarChart3 className="w-8 h-8" />,
+      title: "Progress Analytics",
+      description: "Track your productivity with detailed analytics and insights into your work patterns.",
+      benefits: ["Completion rates", "Productivity trends", "Time tracking", "Performance metrics"]
+    },
+    {
+      icon: <Bell className="w-8 h-8" />,
+      title: "Smart Notifications",
+      description: "Get timely reminders and updates without being overwhelmed by constant notifications.",
+      benefits: ["Customizable alerts", "Smart timing", "Priority-based notifications", "Quiet hours"]
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Team Collaboration",
+      description: "Share tasks and projects with your team for better coordination and accountability.",
+      benefits: ["Shared workspaces", "Task assignments", "Team progress tracking", "Collaborative planning"]
+    },
+    {
+      icon: <Shield className="w-8 h-8" />,
+      title: "Data Security",
+      description: "Your data is protected with enterprise-grade security and privacy controls.",
+      benefits: ["End-to-end encryption", "GDPR compliance", "Secure backups", "Privacy controls"]
+    },
+    {
+      icon: <Zap className="w-8 h-8" />,
+      title: "Lightning Fast",
+      description: "Built for speed with instant sync and real-time updates across all your devices.",
+      benefits: ["Real-time sync", "Offline access", "Fast loading", "Instant updates"]
+    }
+  ];
+
   return (
-    <div className="container" style={{ display: 'grid', gap: 16 }}>
-      <h1 style={{ margin: 0 }}>Features</h1>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-        {cards.map(c => (
-          <div key={c.title} className="card" style={{ overflow: 'hidden' }}>
-            <img src={c.img} alt="feature" style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 8 }} />
-            <h3 style={{ marginBottom: 4 }}>{c.title}</h3>
-            <p style={{ color: 'var(--muted)', marginTop: 0 }}>{c.desc}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+        <div className="container mx-auto px-6 text-center">
+          <h1 className="text-5xl font-bold mb-6">Powerful Features</h1>
+          <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            Everything you need to stay organized, productive, and focused on what matters most.
+          </p>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div 
+                key={index}
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 border border-gray-100 hover:border-blue-200"
+              >
+                <div className="text-blue-600 mb-4">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {feature.description}
+                </p>
+                <ul className="space-y-2">
+                  {feature.benefits.map((benefit, idx) => (
+                    <li key={idx} className="flex items-center text-sm text-gray-600">
+                      <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of users who are already boosting their productivity with Focus Hub.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              to="/signup"
+              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+            >
+              Start Free Trial
+            </Link>
+            <Link 
+              to="/login"
+              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
-  )
-}
-
-
+  );
+};

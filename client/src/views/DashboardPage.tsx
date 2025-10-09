@@ -1,100 +1,173 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../utils/hooks'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState, AppDispatch } from '../store/store'
+import { 
+  fetchTasksThunk, 
+  createTaskThunk, 
+  updateTaskThunk, 
+  deleteTaskThunk, 
+  completeTaskThunk, 
+  startTaskThunk
+} from '../store/slices/tasksSlice'
 import type { Task } from '../store/slices/tasksSlice'
-import { fetchTasks, createTaskThunk, updateTaskThunk, deleteTaskThunk } from '../store/slices/tasksSlice'
+import { TaskList } from '../components/TaskList'
+import { TaskForm } from '../components/TaskForm'
 import styled from 'styled-components'
 
-const Row = styled.div`
-  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+const DashboardContainer = styled.div`
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  min-height: 100vh;
+  color: white;
+  padding: 20px;
 `
 
-export const DashboardPage: React.FC = () => {
-  const dispatch = useAppDispatch()
-  const { items } = useAppSelector(s => s.tasks)
-  const [filter, setFilter] = useState<{status?: string; priority?: string}>({})
-  const [newTask, setNewTask] = useState<{title: string; priority: 'low'|'medium'|'high'; description?: string}>({ title: '', priority: 'medium' })
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editingTitle, setEditingTitle] = useState('')
+const Header = styled.div`
+  text-align: center;
+  margin-bottom: 40px;
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+`
+
+
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+`
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+`
+
+export default function DashboardPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { tasks, loading } = useSelector((state: RootState) => state.tasks);
+  
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
-    dispatch(fetchTasks(filter as any))
-  }, [dispatch, filter])
+    dispatch(fetchTasksThunk({}));
+  }, [dispatch]);
 
-  const grouped = useMemo(() => {
-    const byStatus: Record<string, Task[]> = { todo: [], in_progress: [], done: [] }
-    items.forEach(t => byStatus[t.status].push(t))
-    return byStatus
-  }, [items])
+  const handleCreateTask = () => {
+    setEditingTask(null);
+    setShowTaskForm(true);
+  };
 
-  async function addTask(e: React.FormEvent) {
-    e.preventDefault()
-    if (!newTask.title.trim()) return
-    await dispatch(createTaskThunk({ title: newTask.title.trim(), priority: newTask.priority, description: newTask.description }))
-    setNewTask({ title: '', priority: 'medium' })
-  }
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
+  };
 
-  function toggleStatus(t: Task) {
-    const next = t.status === 'todo' ? 'in_progress' : t.status === 'in_progress' ? 'done' : 'todo'
-    dispatch(updateTaskThunk({ id: t._id, updates: { status: next } }))
-  }
+  const handleSubmitTask = async (taskData: {
+    title: string;
+    description: string;
+    dueDate: string;
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    tags: string[];
+  }) => {
+    try {
+      if (editingTask) {
+        await dispatch(updateTaskThunk({ taskId: editingTask._id, updates: taskData }));
+      } else {
+        await dispatch(createTaskThunk(taskData));
+      }
+      setShowTaskForm(false);
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error saving task:', error);
+    }
+  };
+
+  const handleCompleteTask = async (taskId: string) => {
+    try {
+      await dispatch(completeTaskThunk(taskId));
+    } catch (error) {
+      console.error('Error completing task:', error);
+    }
+  };
+
+  const handleStartTask = async (taskId: string) => {
+    try {
+      await dispatch(startTaskThunk(taskId));
+    } catch (error) {
+      console.error('Error starting task:', error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await dispatch(deleteTaskThunk(taskId));
+      } catch (error) {
+        console.error('Error deleting task:', error);
+      }
+    }
+  };
+
+  const handleCloseForm = () => {
+    setShowTaskForm(false);
+    setEditingTask(null);
+  };
 
   return (
-    <div>
-      <h1>Task Management Dashboard</h1>
-      <Row>
-        <select value={filter.status || ''} onChange={e => setFilter(f => ({...f, status: e.target.value || undefined}))}>
-          <option value="">All Statuses</option>
-          <option value="todo">To Do</option>
-          <option value="in_progress">In Progress</option>
-          <option value="done">Done</option>
-        </select>
-        <select value={filter.priority || ''} onChange={e => setFilter(f => ({...f, priority: e.target.value || undefined}))}>
-          <option value="">All Priorities</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-      </Row>
+    <DashboardContainer>
+      <Header>
+        <h1>Task Management Dashboard</h1>
+        <p>Organize your tasks and stay productive</p>
+      </Header>
 
-      <form onSubmit={addTask} style={{ display: 'grid', gap: 8, maxWidth: 520, marginBottom: 12 }}>
-        <input placeholder="Task title" value={newTask.title} onChange={e => setNewTask(t => ({...t, title: e.target.value}))} />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <select value={newTask.priority} onChange={e => setNewTask(t => ({...t, priority: e.target.value as any}))}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-          <input style={{ flex: 1 }} placeholder="Description (optional)" value={newTask.description || ''} onChange={e => setNewTask(t => ({...t, description: e.target.value}))} />
-          <button type="submit">Add Task</button>
-        </div>
-      </form>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-        {(['todo','in_progress','done'] as const).map(col => (
-          <div key={col} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 8, minHeight: 200 }}>
-            <h3>{col.replace('_',' ')}</h3>
-            {grouped[col].map(t => (
-              <div key={t._id} style={{ border: '1px solid #ccc', borderRadius: 6, padding: 8, marginBottom: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  {editingId === t._id ? (
-                    <input autoFocus value={editingTitle} onChange={e => setEditingTitle(e.target.value)} onBlur={() => { setEditingId(null); setEditingTitle('') }} onKeyDown={e => { if (e.key === 'Enter') { dispatch(updateTaskThunk({ id: t._id, updates: { title: editingTitle.trim() || t.title } })); setEditingId(null); setEditingTitle('') } }} />
-                  ) : (
-                    <strong onDoubleClick={() => { setEditingId(t._id); setEditingTitle(t.title) }} title="Double-click to edit title">{t.title}</strong>
-                  )}
-                  <span>{t.priority}</span>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => toggleStatus(t)}>Next Status</button>
-                  <button onClick={() => dispatch(deleteTaskThunk(t._id))}>Delete</button>
-                </div>
-              </div>
-            ))}
-            {grouped[col].length === 0 && <div style={{ color: '#666' }}>No tasks</div>}
-          </div>
-        ))}
+      <div style={{ background: 'white', borderRadius: '12px', padding: '24px', color: '#1f2937' }}>
+        <TaskList
+          tasks={tasks}
+          loading={loading}
+          onComplete={handleCompleteTask}
+          onStart={handleStartTask}
+          onEdit={handleEditTask}
+          onDelete={handleDeleteTask}
+          onCreate={handleCreateTask}
+        />
       </div>
-    </div>
-  )
+
+      {showTaskForm && (
+        <ModalOverlay onClick={handleCloseForm}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <TaskForm
+              task={editingTask}
+              onSubmit={handleSubmitTask}
+              onCancel={handleCloseForm}
+              loading={loading}
+            />
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </DashboardContainer>
+  );
 }
-
-

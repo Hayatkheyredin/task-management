@@ -1,4 +1,4 @@
-import { connectToDatabase, disconnectFromDatabase } from "./src/lib/db.js";
+import { connectDB, disconnectDB } from "./src/lib/db.js";
 import { User } from "./src/models/User.model.js";
 import { Task } from "./src/models/Task.model.js";
 
@@ -7,7 +7,7 @@ async function testConnection() {
 	
 	try {
 		// Connect to database
-		await connectToDatabase();
+		await connectDB();
 		console.log("✅ Database connection successful!\n");
 		
 		// Test basic operations
@@ -42,7 +42,7 @@ async function testConnection() {
 		console.error("4. Ensure your database user has proper permissions");
 	} finally {
 		// Disconnect
-		await disconnectFromDatabase();
+		await disconnectDB();
 		console.log("\n👋 Disconnected from database");
 	}
 }

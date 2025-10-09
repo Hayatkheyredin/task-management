@@ -1,43 +1,109 @@
-import bcrypt from "bcrypt";
 import { User } from "../models/User.model.js";
 import { signJwt } from "../middleware/auth.js";
+import { validationResult } from "express-validator";
 
 export async function signup(req, res) {
-	const { name, email, password } = req.body;
-	if (!name || !email || !password) return res.status(400).json({ message: "Missing fields" });
-	
 	try {
-		const existing = await User.findOne({ where: { email } });
-		if (existing) return res.status(409).json({ message: "Email already in use" });
+		// Check for validation errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ 
+				message: "Validation failed", 
+				errors: errors.array() 
+			});
+		}
+
+		const { name, email, password } = req.body;
 		
-		const passwordHash = await bcrypt.hash(password, 10);
-		const user = await User.create({ name, email, passwordHash });
-		const token = signJwt(user.id);
+		// Check if user already exists
+		const existingUser = await User.findOne({ email });
+		if (existingUser) {
+			return res.status(409).json({ 
+				message: "Email already in use",
+				field: "email"
+			});
+		}
+		
+		// Create new user
+		const user = new User({ name, email, password });
+		await user.save();
+		
+		// Generate JWT token
+		const token = signJwt(user._id);
 		
 		return res.status(201).json({ 
-			user: { id: user.id, name: user.name, email: user.email }, 
+			message: "User created successfully",
+			user: { 
+				id: user._id, 
+				name: user.name, 
+				email: user.email,
+				avatarUrl: user.avatarUrl,
+				settings: user.settings
+			}, 
 			token 
 		});
 	} catch (error) {
 		console.error("Signup error:", error);
+		
+		// Handle Mongoose validation errors
+		if (error.name === 'ValidationError') {
+			const errors = Object.values(error.errors).map(err => ({
+				field: err.path,
+				message: err.message
+			}));
+			return res.status(400).json({ 
+				message: "Validation failed", 
+				errors 
+			});
+		}
+		
 		return res.status(500).json({ message: "Internal server error" });
 	}
 }
 
 export async function login(req, res) {
-	const { email, password } = req.body;
-	if (!email || !password) return res.status(400).json({ message: "Missing fields" });
-	
 	try {
-		const user = await User.findOne({ where: { email } });
-		if (!user) return res.status(401).json({ message: "Invalid credentials" });
+		// Check for validation errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ 
+				message: "Validation failed", 
+				errors: errors.array() 
+			});
+		}
+
+		const { email, password } = req.body;
 		
-		const ok = await user.comparePassword(password);
-		if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+		// Find user and include password for comparison
+		const user = await User.findOne({ email }).select('+password');
+		if (!user) {
+			return res.status(401).json({ 
+				message: "Invalid credentials",
+				field: "email"
+			});
+		}
 		
-		const token = signJwt(user.id);
+		// Compare password
+		const isPasswordValid = await user.comparePassword(password);
+		if (!isPasswordValid) {
+			return res.status(401).json({ 
+				message: "Invalid credentials",
+				field: "password"
+			});
+		}
+		
+		// Generate JWT token
+		const token = signJwt(user._id);
+		
 		return res.json({ 
-			user: { id: user.id, name: user.name, email: user.email }, 
+			message: "Login successful",
+			user: { 
+				id: user._id, 
+				name: user.name, 
+				email: user.email,
+				avatarUrl: user.avatarUrl,
+				settings: user.settings
+			}, 
 			token 
 		});
 	} catch (error) {
@@ -46,13 +112,35 @@ export async function login(req, res) {
 	}
 }
 
+export async function logout(req, res) {
+	try {
+		// Since we're using JWT, logout is handled client-side by removing the token
+		// We could implement a token blacklist here if needed for enhanced security
+		return res.json({ message: "Logout successful" });
+	} catch (error) {
+		console.error("Logout error:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+}
+
 export async function me(req, res) {
 	try {
-		const user = await User.findByPk(req.user.id, {
-			attributes: ['id', 'name', 'email', 'avatarUrl', 'settings']
+		const user = await User.findById(req.user.id);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+		
+		return res.json({ 
+			user: {
+				id: user._id,
+				name: user.name,
+				email: user.email,
+				avatarUrl: user.avatarUrl,
+				settings: user.settings,
+				createdAt: user.createdAt,
+				updatedAt: user.updatedAt
+			}
 		});
-		if (!user) return res.status(404).json({ message: "User not found" });
-		return res.json({ user });
 	} catch (error) {
 		console.error("Me error:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -60,17 +148,25 @@ export async function me(req, res) {
 }
 
 export async function updateProfile(req, res) {
-	const { name, avatarUrl, settings } = req.body;
-	
 	try {
-		const user = await User.findByPk(req.user.id);
-		if (!user) return res.status(404).json({ message: "User not found" });
+		const { name, avatarUrl, settings } = req.body;
 		
-		await user.update({ name, avatarUrl, settings });
+		const user = await User.findById(req.user.id);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+		
+		// Update user fields
+		if (name !== undefined) user.name = name;
+		if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
+		if (settings !== undefined) user.settings = { ...user.settings, ...settings };
+		
+		await user.save();
 		
 		return res.json({ 
+			message: "Profile updated successfully",
 			user: { 
-				id: user.id, 
+				id: user._id, 
 				name: user.name, 
 				email: user.email, 
 				avatarUrl: user.avatarUrl, 
@@ -79,6 +175,19 @@ export async function updateProfile(req, res) {
 		});
 	} catch (error) {
 		console.error("Update profile error:", error);
+		
+		// Handle Mongoose validation errors
+		if (error.name === 'ValidationError') {
+			const errors = Object.values(error.errors).map(err => ({
+				field: err.path,
+				message: err.message
+			}));
+			return res.status(400).json({ 
+				message: "Validation failed", 
+				errors 
+			});
+		}
+		
 		return res.status(500).json({ message: "Internal server error" });
 	}
 }
